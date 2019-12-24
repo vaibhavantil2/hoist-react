@@ -76,9 +76,6 @@ export class NumberInput extends HoistInput {
         /** Max decimal precision of the value, defaults to 4. */
         precision: PT.number,
 
-        /** True for precision to flow through to commited value. */
-        enforcePrecision: PT.bool,
-
         /** Element to display inline on the right side of the input. */
         rightElement: PT.element,
 
@@ -141,17 +138,15 @@ export class NumberInput extends HoistInput {
     }
 
     onValueChange = (val, valAsString) => {
+        // round trip with formatting to get consistent precision
+        valAsString =  this.internalFormat(valAsString, false);
         this.noteValueChange(valAsString);
     }
 
     toExternal(val) {
         val = this.parseValue(val);
-
-        return isNaN(val) ?
-            null :
-            this.props.enforcePrecision ?
-                this.enforcePrecision(val) :
-                val;
+        if (val == null || isNaN(val)) return null;
+        return val;
     }
 
     onKeyDown = (ev) => {
@@ -163,11 +158,7 @@ export class NumberInput extends HoistInput {
         if (value == null) return '';
 
         if (this.hasFocus) return value;
-
-        const {zeroPad, displayWithCommas} = this.props,
-            formattedVal = fmtNumber(value, {precision: this.precision, zeroPad: !!zeroPad});
-
-        return displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
+        return this.internalFormat(value, this.props.displayWithCommas);
     }
 
     parseValue(value) {
@@ -195,8 +186,13 @@ export class NumberInput extends HoistInput {
         return parseFloat(value);
     }
 
-    enforcePrecision(value) {
-        return fmtNumber(value, {formatConfig: {mantissa: this.precision, thousandSeparated: false}});
+    internalFormat(val, displayWithCommas) {
+        let {precision, zeroPad} = this.props;
+        precision = precision ?? 4;
+        zeroPad = !!zeroPad;
+
+        const ret = fmtNumber(val, {precision, zeroPad});
+        return displayWithCommas ? ret : ret.replace(/,/g, '');
     }
 
     onFocus = (ev) => {
@@ -207,11 +203,6 @@ export class NumberInput extends HoistInput {
             const target = ev.target;
             wait(1).then(() => target.select());
         }
-    }
-
-    get precision() {
-        const {precision} = this.props;
-        return precision != null ? precision : 4;
     }
 }
 export const numberInput = elemFactory(NumberInput);
