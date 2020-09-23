@@ -484,7 +484,12 @@ export class Select extends HoistInput {
 
         // For rendering dropdown menu items, use an optionRenderer if provided - or use the
         // implementation here to render a checkmark next to the active selection.
-        const optionRenderer = this.props.optionRenderer || this.optionRenderer;
+
+        // __isNew__ == true is the attribute given to the "Create XYZ" choice when enableCreate is true.
+        // Fallback to our default optionRenderer the text is new.
+        const optionRenderer = opt.__isNew__ || !this.props.optionRenderer ?
+            this.optionRenderer :
+            this.props.optionRenderer;
         return optionRenderer(opt);
     };
 

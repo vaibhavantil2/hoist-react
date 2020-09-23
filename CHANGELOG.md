@@ -5,6 +5,7 @@
 ### 🐞 Bug Fixes
 
 * Fixed a regression introduced in v36.1.0 in `FilterChooser`. Now supports `disabled` prop.
+* Fix display of "Create" option in a `select` input that has an `optionRenderer` and `enableCreate:true`.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.1.0...develop)
 
