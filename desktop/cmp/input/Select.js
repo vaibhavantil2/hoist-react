@@ -217,7 +217,7 @@ export class Select extends HoistInput {
                 value: this.renderValue,
 
                 autoFocus: props.autoFocus,
-                formatOptionLabel: this.formatOptionLabel,
+                formatOptionLabel: this.pickOptionLabelFormatter(),
                 isDisabled: props.disabled,
                 isMulti: props.enableMulti,
                 // Explicit false ensures consistent default for single and multi-value instances.
@@ -475,37 +475,19 @@ export class Select extends HoistInput {
     //----------------------
     // Option Rendering
     //----------------------
-    formatOptionLabel = (opt, params) => {
-        // Always display the standard label string in the value container (context == 'value').
-        // If we need to expose customization here, we could consider a dedicated prop.
-        if (params.context !== 'menu') {
-            return opt.label;
+    // Always display the standard label string in the value container (context == 'value').
+    // If we need to expose customization here, we could consider a dedicated prop.
+
+    // For rendering dropdown menu items, use an optionRenderer if provided - or use the
+    // implementation here to render a checkmark next to the active selection.
+    pickOptionLabelFormatter() {
+        if (this.props.optionRenderer) {
+            return (opt, params) => params.context !== 'menu' ? opt.label : this.props.optionRenderer(opt);
         }
 
-        // For rendering dropdown menu items, use an optionRenderer if provided - or use the
-        // implementation here to render a checkmark next to the active selection.
-        const optionRenderer = this.props.optionRenderer || this.optionRenderer;
-        return optionRenderer(opt);
-    };
-
-    optionRenderer = (opt) => {
-        if (this.suppressCheck) {
-            return div(opt.label);
-        }
-
-        return castArray(this.externalValue).includes(opt.value) ?
-            hbox({
-                items: [
-                    div({
-                        style: {minWidth: 25, textAlign: 'center'},
-                        item: Icon.check({size: 'sm'})
-                    }),
-                    span(opt.label)
-                ],
-                paddingLeft: 0
-            }) :
-            div({item: opt.label, style: {paddingLeft: 25}});
-    };
+        const optionRenderer = this.pickOptionRenderer();
+        return (opt, params) => params.context !== 'menu' ? opt.label : optionRenderer(opt);
+    }
 
     get suppressCheck() {
         const {props} = this;
@@ -517,6 +499,32 @@ export class Select extends HoistInput {
 
         return withDefault(props.hideSelectedOptionCheck, dflt);
     }
+
+
+    pickOptionRenderer() {
+        const equalityTest = this.props.enableMulti ?
+            opt => this.externalValue?.includes(opt.value) :
+            opt => this.externalValue === opt.value;
+
+        return this.suppressCheck ? this.optionRenderers.suppressCheck : this.optionRenderers.notSuppressCheck(equalityTest);
+    }
+
+    optionRenderers = {
+        suppressCheck: opt => div(opt.label),
+        notSuppressCheck: (equalityTest) => opt => equalityTest(opt) ?
+            hbox({
+                items: [
+                    div({
+                        style: {minWidth: 25, textAlign: 'center'},
+                        item: Icon.check({size: 'sm'})
+                    }),
+                    span(opt.label)
+                ],
+                paddingLeft: 0
+            }) :
+            div({item: opt.label, style: {paddingLeft: 25}})
+    }
+
 
     //------------------------
     // Other Implementation
