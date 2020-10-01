@@ -135,6 +135,24 @@
         color: var(--xh-text-color-highlight);
         background: var(--xh-bg-alt);
       }
+
+      &__renderer {
+        &--with-check {
+          padding-left: 0;
+
+          > div {
+            min-width: 25px;
+            text-align: center;
+          }
+        }
+
+        &--without-check {
+          padding-left: 25px;
+        }
+
+      }
+
+
     }
   }
 }

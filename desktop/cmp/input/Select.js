@@ -513,16 +513,16 @@ export class Select extends HoistInput {
         suppressCheck: opt => div(opt.label),
         notSuppressCheck: (equalityTest) => opt => equalityTest(opt) ?
             hbox({
+                className: 'xh-select__option__renderer--with-check',
                 items: [
-                    div({
-                        style: {minWidth: 25, textAlign: 'center'},
-                        item: Icon.check({size: 'sm'})
-                    }),
+                    div(Icon.check({size: 'sm'})),
                     span(opt.label)
-                ],
-                paddingLeft: 0
+                ]
             }) :
-            div({item: opt.label, style: {paddingLeft: 25}})
+            div({
+                className: 'xh-select__option__renderer--without-check',
+                item: opt.label
+            })
     }
 
 
