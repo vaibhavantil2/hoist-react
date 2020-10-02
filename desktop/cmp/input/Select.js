@@ -176,11 +176,14 @@ export class Select extends HoistInput {
     get creatableMode() {return !!this.props.enableCreate}
     get windowedMode() {return !!this.props.enableWindowed}
     get multiMode() {return !!this.props.enableMulti}
-    get filterMode() {return withDefault(this.props.enableFilter, true)}
+    get filterMode() {return this.props.enableFilter ?? true}
     get selectOnFocus() {
-        return withDefault(this.props.selectOnFocus,
-            !this.multiMode && (this.filterMode || this.creatableMode));
+        return this.props.selectOnFocus ??
+            (!this.multiMode && (this.filterMode || this.creatableMode));
     }
+    get hideSelectedOptions() {return this.props.hideSelectedOptions ?? this.multiMode}
+    get hideSelectedOptionCheck() {return this.props.hideSelectedOptionCheck || this.hideSelectedOptions}
+
 
     // Managed value for underlying text input under certain conditions
     // This is a workaround for rs-select issue described in hoist-react #880
@@ -498,27 +501,17 @@ export class Select extends HoistInput {
         return (opt, params) => params.context !== 'menu' ? opt.label : optionRenderer(opt);
     }
 
-    get suppressCheck() {
-        return withDefault(this.props.hideSelectedOptionCheck, this.hideSelectedOptions);
-    }
-
-    // Match react-select defaulting.
-    get hideSelectedOptions() {
-        return withDefault(this.props.hideSelectedOptions, this.props.enableMulti);
-    }
-
-
     pickOptionRenderer() {
         const equalityTest = this.props.enableMulti ?
             opt => this.externalValue?.includes(opt.value) :
             opt => this.externalValue === opt.value;
 
-        return this.suppressCheck ? this.optionRenderers.suppressCheck : this.optionRenderers.notSuppressCheck(equalityTest);
+        return this.hideSelectedOptionCheck ? this.optionRenderers.hideSelectedOptionCheck : this.optionRenderers.showSelectedOptionCheck(equalityTest);
     }
 
     optionRenderers = {
-        suppressCheck: opt => div(opt.label),
-        notSuppressCheck: (equalityTest) => opt => equalityTest(opt) ?
+        hideSelectedOptionCheck: opt => div(opt.label),
+        showSelectedOptionCheck: (equalityTest) => opt => equalityTest(opt) ?
             hbox({
                 className: 'xh-select__option__renderer--with-check',
                 items: [
@@ -531,7 +524,6 @@ export class Select extends HoistInput {
                 item: opt.label
             })
     }
-
 
     //------------------------
     // Other Implementation
