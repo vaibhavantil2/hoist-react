@@ -8,7 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {apiRemoved, throwIf} from '@xh/hoist/utils/js';
-import {isNumber} from 'lodash';
+import {isFunction, isNumber} from 'lodash';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
@@ -25,6 +25,9 @@ export class DataViewModel extends HoistModel {
     itemHeight;
 
     @bindable
+    itemHeightIsFn;
+
+    @bindable
     groupRowHeight;
 
     /**
@@ -32,7 +35,8 @@ export class DataViewModel extends HoistModel {
      * @param {(Store|Object)} c.store - a Store instance, or a config to create one.
      * @param {Column~elementRendererFn} c.elementRenderer - function returning a React element for
      *      each data row.
-     * @param {number} itemHeight - Row height (in px) for each item displayed in the view.
+     * @param {number|function} itemHeight - Row height (in px) for each item displayed in the view, 
+     *      or function to calculate row height based on the rendered element in the row.
      * @param {(string|string[])} [c.groupBy] - field(s) by which to do full-width row grouping.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row.
      * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
@@ -75,11 +79,13 @@ export class DataViewModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
-        throwIf(!isNumber(itemHeight), 'Must specify DataViewModel.itemHeight as a number to set a fixed pixel height for each item.');
+        this.itemHeightIsFn = isFunction(itemHeight);
+        throwIf(!isNumber(itemHeight) && !this.itemHeightIsFn, `Must specify DataViewModel.itemHeight as a number to set a fixed pixel height for each item, 
+        or as a function to calculate a height based on item contents.`);
         apiRemoved(restArgs.rowCls, 'rowCls', 'Use \'rowClassFn\' instead.');
         apiRemoved(restArgs.itemRenderer, 'itemRenderer', 'Use \'elementRenderer\' instead.');
 
-        this.itemHeight = itemHeight;
+        this.itemHeight = this.itemHeightIsFn ? itemHeight : () => itemHeight;
         this.groupRowHeight = groupRowHeight;
 
         // We create a single visible 'synthetic' column in our DataView grid to hold our renderer
