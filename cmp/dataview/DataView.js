@@ -73,23 +73,15 @@ class LocalModel extends HoistModel {
 
         this.agOptions = {
             headerHeight: 0,
-            // 500 is the max number of rows agGrid will render at once.
-            // so, effectively, the max number of records
-            // that can be loaded into a dataview whose items are dynamically 
-            // calculated is 500.  
-            // see https://www.ag-grid.com/documentation/react/dom-virtualisation/#row-virtualisation
-            rowBuffer: model.itemHeightIsFn ? 500 : undefined,
-            
-            // This is necessary to get the item heights calculated using the reference attached to the record.
-            // The first time getRowHeight is called, ref.current is null.  So, onRowDataChanged, we need to call 
-            // resetRowHeights to get agGrid to re-run getRowHeight with the now rendered DataViewItems.
-            onRowDataChanged: model.itemHeightIsFn ? ({api}) => api.resetRowHeights() : undefined,
-            onRowDataUpdated: model.itemHeightIsFn ? ({api}) => api.resetRowHeights() : undefined,
-
             suppressMakeColumnVisibleAfterUnGroup: true,
             getRowHeight: (params) => {
+                const {itemHeight} = model;
                 // Return (required) itemHeight for data rows.
-                if (!params.node?.group) return model.itemHeight(params);
+                if (!params.node?.group) {
+                    return itemHeight === 'auto' ? 
+                        model.solveItemHeight(params) :
+                        itemHeight;
+                }
 
                 // For group rows, return groupRowHeight if specified, or use standard height
                 // (DataView does not participate in grid sizing modes.)
