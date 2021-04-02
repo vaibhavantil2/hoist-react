@@ -5,12 +5,13 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
-import {filler, fragment} from '@xh/hoist/cmp/layout';
+import {filler, fragment, p} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {compact, isString} from 'lodash';
 import './ExceptionDialog.scss';
 import {exceptionDialogDetails} from './ExceptionDialogDetails';
 
@@ -29,7 +30,12 @@ export const exceptionDialog = hoistCmp.factory({
 
         if (!exception) return null;
 
-        const onClose = !options.requireReload ? () => model.close() : null;
+        const onClose = !options.requireReload ? () => model.close() : null,
+            // Render message strings with line breaks as distinct paragraphs for readability,
+            // with fallback if no message provided.
+            message = isString(options.message) ?
+                compact(options.message.split('\n')).map(msg => p(msg)) :
+                'No additional details available.';
 
         return fragment(
             dialog({
@@ -39,7 +45,7 @@ export const exceptionDialog = hoistCmp.factory({
                 onClose,
                 icon: Icon.warning({size: 'lg'}),
                 items: [
-                    dialogBody(options.message),
+                    dialogBody(message),
                     bbar()
                 ]
             }),
