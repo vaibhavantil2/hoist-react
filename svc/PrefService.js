@@ -7,7 +7,7 @@
 import {HoistService, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import {cloneDeep, debounce, forEach, isEmpty, isEqual, isNil, pickBy} from 'lodash';
+import {cloneDeep, debounce, forEach, isArray, isEmpty, isEqual, isNil, pickBy} from 'lodash';
 
 /**
  * Service to read and set user-specific preference values.
@@ -107,7 +107,8 @@ export class PrefService extends HoistService {
      */
     unset(key) {
         // TODO: round-trip this to the server as a proper unset?
-        this.set(key, this._data[key]?.defaultValue);
+        const keyList = isArray(key) ? key : [key];
+        keyList.forEach(key => this.set(key, this._data[key]?.defaultValue));
     }
 
 
