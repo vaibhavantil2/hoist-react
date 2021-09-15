@@ -154,6 +154,7 @@ export class GridModel extends HoistModel {
         '-',
         'exportExcel',
         'exportCsv',
+        'exportPdf',
         '-',
         'restoreDefaults',
         '-',

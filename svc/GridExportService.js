@@ -38,8 +38,8 @@ export class GridExportService extends HoistService {
             'GridModel required for export');
         throwIf(!isString(filename) && !isFunction(filename),
             'Export filename must be either a string or a closure');
-        throwIf(!['excel', 'excelTable', 'csv'].includes(type),
-            `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
+        throwIf(!['excel', 'excelTable', 'csv', 'pdf'].includes(type),
+            `Invalid export type "${type}". Must be either "excel", "excelTable", "csv" or "pdf"`);
         throwIf(!(isFunction(columns) || isArray(columns) || ['ALL', 'VISIBLE'].includes(columns)),
             'Invalid columns config - must be "ALL", "VISIBLE", an array of colIds, or a function'
         );
@@ -212,7 +212,7 @@ export class GridExportService extends HoistService {
 
         // Excel does not like duplicate (case-insensitive) header names in tables and will prompt
         // the user to "repair" the file when opened if present.
-        if (type === 'excelTable' && uniq(headers.map(it => it.toLowerCase())).length !== headers.length) {
+        if ((type === 'excelTable' || type === 'pdf') && uniq(headers.map(it => it.toLowerCase())).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
         return {data: headers, depth: 0};
@@ -302,6 +302,8 @@ export class GridExportService extends HoistService {
             case 'excelTable':
             case 'excel':
                 return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            case 'pdf':
+                return 'application/pdf';
             case 'csv':
                 return 'text/csv';
         }
@@ -312,6 +314,8 @@ export class GridExportService extends HoistService {
             case 'excelTable':
             case 'excel':
                 return '.xlsx';
+            case 'pdf':
+                return '.pdf';
             case 'csv':
                 return '.csv';
         }
@@ -331,7 +335,7 @@ export class GridExportService extends HoistService {
  * @typedef {Object} ExportOptions - options for exporting grid records to a file.
  * @property {(string|function)} [options.filename] - name for export file, or closure to generate.
  *      Do not include the file extension - that will be appended based on the specified type.
- * @property {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
+ * @property {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv', 'pdf'].
  * @property {(string|string[]|function)} [options.columns] - columns to include in export. Supports
  *      tokens 'VISIBLE' (default - all currently visible cols), 'ALL' (all columns), or specific
  *      column IDs to include (can be used in conjunction with VISIBLE to export all visible and

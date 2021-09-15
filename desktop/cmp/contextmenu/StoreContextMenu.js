@@ -34,6 +34,7 @@ export class StoreContextMenu {
      *          `export` - export grid data to excel via Hoist's server-side export capabilities.
      *          `exportExcel` - alias for `export`.
      *          `exportCsv` - export to CSV via Hoist's server-side export capabilities.
+     *          `exportPdf` - export to PDF via Hoist's server-side export capabilities.
      *          `exportLocal` - export to Excel via ag-Grid's built-in client side export.
      *          `autosizeColumns` - autosize columns to fit their contents.
      *          `restoreDefaults` - restore column, sorting, and grouping configs and clear any
@@ -184,6 +185,14 @@ export class StoreContextMenu {
                     hidden: !gridModel?.enableExport,
                     disabled: !gridModel?.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'csv'})
+                });
+            case 'exportPdf':
+                return new RecordAction({
+                    text: 'Export to PDF',
+                    icon: Icon.filePdf(),
+                    hidden: !gridModel?.enableExport,
+                    disabled: !gridModel?.store.count,
+                    actionFn: () => gridModel.exportAsync({type: 'pdf'})
                 });
             case 'expandCollapseAll':
                 return [
