@@ -32,7 +32,7 @@ export class GridExportService extends HoistService {
         filename = 'export',
         type = 'excelTable',
         columns = 'VISIBLE',
-        timeout = 30 * SECONDS
+        timeout = 600 * SECONDS
     } = {}) {
         throwIf(!gridModel,
             'GridModel required for export');
