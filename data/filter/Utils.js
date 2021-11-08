@@ -6,7 +6,7 @@
  */
 
 import {CompoundFilter, FieldFilter, FunctionFilter} from '@xh/hoist/data';
-import {castArray, flatMap, groupBy, isArray, isFunction} from 'lodash';
+import {castArray, compact, flatMap, groupBy, isArray, isFunction} from 'lodash';
 
 /**
  * Parse a filter from an object or array representation.
@@ -140,3 +140,25 @@ export function combineValueFilters(filters = []) {
             filters;
     });
 }
+
+/**
+ * Return a filter with all references to a particular field name removed.
+ *
+ * @param {Filter} filter - Existing Filter to modify.
+ * @param {String} field - Name of field to remove
+ * @return {Filter} - the new Filter, or null.
+ */
+export function withoutField(filter, field) {
+    if (!filter) return null;
+    if (filter.field === field) return null;
+    if (filter.filters) {
+        return {
+            op: filter.op,
+            filters: compact(filter.filters.map(f => withoutField(f, field)))
+        };
+    }
+    return filter;
+}
+
+
+
